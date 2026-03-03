@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>婚礼抽奖系统</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", "SimHei", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffeeee, #ffe6e6);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 标题样式 */
+        .title {
+            text-align: center;
+            color: #d43f3a;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .title h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 8px;
+        }
+
+        /* 页面容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex; /* flex布局实现对齐 */
+            align-items: stretch; /* 拉伸子元素高度一致 */
+            gap: 40px; /* 模块间距 */
+            padding-top: 120px; /* 给标题留出空间 */
+            min-height: calc(100vh - 120px);
+        }
+
+        /* 参数设置区域（小面积） */
+        .settings {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(212, 63, 58, 0.15);
+            width: 300px;
+            flex-shrink: 0; /* 固定宽度 */
+            border: 2px solid #f8d0d0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 内容垂直居中 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 装饰性背景图案（Unicode字符） */
+        .settings::before {
+            content: "❤️";
+            color: rgba(212, 63, 58, 0.05);
+            font-size: 120px;
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            z-index: 0;
+        }
+
+        .settings::after {
+            content: "💍";
+            color: rgba(230, 126, 34, 0.05);
+            font-size: 100px;
+            position: absolute;
+            bottom: -20px;
+            left: -20px;
+            z-index: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .settings h3 {
+            color: #d43f3a;
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        /* 图标样式统一设置 */
+        .icon {
+            color: #d43f3a;
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 10px 10px 12px;
+            border: 2px solid #f0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group input:focus {
+            border-color: #d43f3a;
+        }
+
+        .btn-group {
+            margin-top: auto; /* 按钮靠底部 */
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(to right, #d43f3a, #e67e22);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 63, 58, 0.3);
+        }
+
+        .btn#resetBtn {
+            background: #999;
+        }
+
+        /* 结果展示区域（重点展示） */
+        .result-container {
+            flex: 1; /* 占据剩余空间 */
+            background: #fff;
+            border-radius: 15px; /* 统一圆角 */
+            padding: 50px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(212, 63, 58, 0.15);
+            border: 2px solid #f8d0d0; /* 统一边框 */
+        }
+
+        .result-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .number-item {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #d43f3a, #ff6b6b);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(212, 63, 58, 0.3);
+            transition: all 0.5s ease;
+            border: 4px solid #fff;
+        }
+
+        .number-item:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 25px rgba(212, 63, 58, 0.4);
+        }
+
+        .empty-state {
+            color: #999;
+            font-size: 1.8rem;
+            text-align: center;
+            padding: 50px;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                gap: 20px;
+                padding-top: 100px;
+            }
+            
+            .settings {
+                width: 100%;
+                min-height: auto;
+            }
+
+            .result-container {
+                min-height: 400px;
+            }
+
+            .title h1 {
+                font-size: 2.5rem;
+            }
+
+            .number-item {
+                width: 100px;
+                height: 100px;
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>新婚快乐 · 幸运抽奖</h1>
+    </div>
+    <div class="container">
+        <!-- 参数设置区域（小面积） -->
+        <div class="settings">
+            <div class="settings-header">
+                <span class="icon">💍</span>
+                <h3>抽奖设置</h3>
+                <span class="icon">❤️</span>
+            </div>
+            <div class="form-group">
+                <label for="minNum">
+                    <span class="icon">⭐</span>
+                    起始数字
+                </label>
+                <input type="number" id="minNum" value="1" min="1" placeholder="请输入起始数字">
+            </div>
+            <div class="form-group">
+                <label for="maxNum">
+                    <span class="icon">🔥</span>
+                    结束数字
+                </label>
+                <input type="number" id="maxNum" value="100" min="1" placeholder="请输入结束数字">
+            </div>
+            <div class="form-group">
+                <label for="count">
+                    <span class="icon">🎁</span>
+                    抽取数量
+                </label>
+                <input type="number" id="count" value="6" min="1" max="50" placeholder="请输入抽取数量">
+            </div>
+            <div class="btn-group">
+                <button class="btn" id="drawBtn">
+                    <span class="icon">🎉</span>
+                    开始抽奖
+                </button>
+                <button class="btn" id="resetBtn">
+                    <span class="icon">🔄</span>
+                    重置结果
+                </button>
+            </div>
+        </div>
+
+        <!-- 结果展示区域（重点） -->
+        <div class="result-container">
+            <div class="result-numbers" id="resultNumbers">
+                <div class="empty-state">
+                    点击左侧按钮开始抽奖<br>
+                    开启幸运时刻 🎉
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const minNumInput = document.getElementById('minNum');
+        const maxNumInput = document.getElementById('maxNum');
+        const countInput = document.getElementById('count');
+        const drawBtn = document.getElementById('drawBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resultNumbers = document.getElementById('resultNumbers');
+
+        // 抽奖函数
+        drawBtn.addEventListener('click', function() {
+            // 获取输入值并验证
+            const min = parseInt(minNumInput.value);
+            const max = parseInt(maxNumInput.value);
+            const count = parseInt(countInput.value);
+
+            // 验证输入合法性
+            if (isNaN(min) || isNaN(max) || isNaN(count)) {
+                alert('请输入有效的数字！');
+                return;
+            }
+
+            if (min >= max) {
+                alert('起始数字必须小于结束数字！');
+                return;
+            }
+
+            if (count < 1 || count > 50) {
+                alert('抽取数量必须在1-50之间！');
+                return;
+            }
+
+            if ((max - min + 1) < count) {
+                alert(`抽取数量不能超过数字范围（可选数量：${max - min + 1}）！`);
+                return;
+            }
+
+            // 生成不重复的随机数
+            const numbers = [];
+            while (numbers.length < count) {
+                const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                if (!numbers.includes(randomNum)) {
+                    numbers.push(randomNum);
+                }
+            }
+
+            // 排序（可选，让号码更整齐）
+            numbers.sort((a, b) => a - b);
+
+            // 渲染结果
+            renderResult(numbers);
+        });
+
+        // 重置按钮
+        resetBtn.addEventListener('click', function() {
+            resultNumbers.innerHTML = `
+                <div class="empty-state">
+                    点击左侧按钮开始抽奖<br>
+                    开启幸运时刻 🎉
+                </div>
+            `;
+        });
+
+        // 渲染抽奖结果
+        function renderResult(numbers) {
+            let html = '';
+            numbers.forEach(num => {
+                html += `<div class="number-item">${num}</div>`;
+            });
+            resultNumbers.innerHTML = html;
+
+            // 添加动画效果
+            const numberItems = document.querySelectorAll('.number-item');
+            numberItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0)';
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'scale(1)';
+                }, 100 * index);
+            });
+        }
+    </script>
+</body>
+</html>
